@@ -1,0 +1,328 @@
+
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <limits>
+using namespace std;
+
+#define MAX 100
+#define INF 999999
+
+string village[MAX];
+int graph[MAX][MAX];
+bool visited[MAX];
+
+// BFS Algorithm
+void BFS(int start, int n)
+{
+    int q[MAX], front = 0, rear = 0;
+
+    for (int i = 0; i < n; i++)
+        visited[i] = false;
+
+    visited[start] = true;
+    q[rear++] = start;
+
+    cout << "\n===== BFS VILLAGE TRAVERSAL =====\n";
+
+    while (front < rear)
+    {
+        int u = q[front++];
+
+        cout << village[u] << " ";
+
+        for (int v = 0; v < n; v++)
+        {
+            if (graph[u][v] > 0 && !visited[v])
+            {
+                visited[v] = true;
+                q[rear++] = v;
+            }
+        }
+    }
+
+    cout << "\nBFS Completed Successfully!\n";
+}
+
+// Display Adjacency Matrix
+void displayMatrix(int n)
+{
+    cout << "\n========== ADJACENCY MATRIX ==========\n";
+
+    cout << setw(15) << " ";
+
+    for (int i = 0; i < n; i++)
+        cout << setw(10) << i + 1;
+
+    cout << endl;
+
+    for (int i = 0; i < n; i++)
+    {
+        cout << setw(15) << village[i];
+
+        for (int j = 0; j < n; j++)
+            cout << setw(10) << graph[i][j];
+
+        cout << endl;
+    }
+}
+
+// Prim's Algorithm
+void Prim(int n)
+{
+    int key[MAX], parent[MAX];
+    bool mst[MAX] = {false};
+
+    for (int i = 0; i < n; i++)
+    {
+        key[i] = INF;
+        parent[i] = -1;
+    }
+
+    int totalCost = 0;
+    int components = 0;
+    int edges = 0;
+
+    cout << "\n===== PRIM'S MINIMUM COST NETWORK =====\n";
+
+    for (int count = 0; count < n; count++)
+    {
+        int min = INF, u = -1;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (!mst[i] && key[i] < min)
+            {
+                min = key[i];
+                u = i;
+            }
+        }
+
+        // Start a new connected component
+        if (u == -1)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                if (!mst[i])
+                {
+                    key[i] = 0;
+                    parent[i] = -1;
+                }
+            }
+
+            components++;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (!mst[i])
+                {
+                    u = i;
+                    break;
+                }
+            }
+        }
+
+        if (count == 0)
+            components = 1;
+
+        mst[u] = true;
+
+        if (parent[u] != -1)
+        {
+            cout << village[parent[u]] << " - "
+                 << village[u] << " : "
+                 << graph[u][parent[u]] << endl;
+
+            totalCost += graph[u][parent[u]];
+            edges++;
+        }
+
+        for (int v = 0; v < n; v++)
+        {
+            if (graph[u][v] > 0 && !mst[v] &&
+                graph[u][v] < key[v])
+            {
+                key[v] = graph[u][v];
+                parent[v] = u;
+            }
+        }
+    }
+
+    cout << "\nTotal Pipeline Edges = " << edges;
+    cout << "\nTotal Minimum Cost = " << totalCost;
+
+    if (components == 1)
+        cout << "\nMinimum Spanning Tree Created Successfully!\n";
+    else
+        cout << "\nNetwork is disconnected!";
+        cout << "\nMinimum Spanning Forest Created.\n";
+}
+
+int main()
+{
+    int n, m, choice, start;
+    int u, v, cost;
+
+    cout << "\n========================================";
+    cout << "\n   VILLAGE WATER DISTRIBUTION SYSTEM";
+    cout << "\n========================================";
+
+    // Enter Villages
+    cout << "\nEnter Number of Villages (Maximum 100): ";
+    cin >> n;
+
+    if (n < 1 || n > MAX)
+    {
+        cout << "Invalid Number of Villages!";
+        return 0;
+    }
+
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    for (int i = 0; i < n; i++)
+    {
+        cout << "Enter Village " << i + 1 << ": ";
+        getline(cin, village[i]);
+    }
+
+    // Initialize Matrix
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            graph[i][j] = 0;
+        }
+    }
+
+    // Enter Pipelines
+    cout << "\nEnter Number of Pipelines (Maximum "
+         << n * (n - 1) / 2 << "): ";
+    cin >> m;
+
+    if (m < 0 || m > n * (n - 1) / 2)
+    {
+        cout << "Invalid Number of Pipelines!";
+        return 0;
+    }
+
+    cout << "\nAvailable Villages:\n";
+
+    for (int i = 0; i < n; i++)
+        cout << i + 1 << ". " << village[i] << endl;
+
+    cout << "\nEnter Pipeline Details:\n";
+
+    for (int i = 0; i < m; i++)
+    {
+        cout << "\nPipeline " << i + 1 << endl;
+
+        cout << "Enter First Village Number: ";
+        cin >> u;
+
+        cout << "Enter Second Village Number: ";
+        cin >> v;
+
+        if (u < 1 || u > n || v < 1 || v > n || u == v)
+        {
+            cout << "Invalid Village Numbers! Try Again.\n";
+            i--;
+            continue;
+        }
+
+        if (graph[u - 1][v - 1] != 0)
+        {
+            cout << "Pipeline Already Exists! Try Again.\n";
+            i--;
+            continue;
+        }
+
+        cout << "Enter Pipeline Cost: ";
+        cin >> cost;
+
+        if (cost <= 0)
+        {
+            cout << "Invalid Cost! Enter Positive Cost.\n";
+            i--;
+            continue;
+        }
+
+        graph[u - 1][v - 1] = cost;
+        graph[v - 1][u - 1] = cost;
+    }
+
+    cout << "\nAll Pipeline Details Added Successfully!\n";
+
+    // Switch Case Menu
+    do
+    {
+        cout << "\n========================================";
+        cout << "\n              MAIN MENU";
+        cout << "\n========================================";
+        cout << "\n1. Display All Villages";
+        cout << "\n2. Display Pipeline Details";
+        cout << "\n3. Display Adjacency Matrix";
+        cout << "\n4. Find Minimum Cost Network (Prim)";
+        cout << "\n5. Explore Connected Villages (BFS)";
+        cout << "\n6. Exit";
+
+        cout << "\nEnter Your Choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+            case 1:
+                cout << "\n===== VILLAGE LIST =====\n";
+
+                for (int i = 0; i < n; i++)
+                    cout << i + 1 << ". "
+                         << village[i] << endl;
+                break;
+
+            case 2:
+                cout << "\n===== PIPELINE DETAILS =====\n";
+
+                for (int i = 0; i < n; i++)
+                {
+                    for (int j = i + 1; j < n; j++)
+                    {
+                        if (graph[i][j] > 0)
+                        {
+                            cout << village[i] << " - "
+                                 << village[j] << " : "
+                                 << graph[i][j] << endl;
+                        }
+                    }
+                }
+                break;
+
+            case 3:
+                displayMatrix(n);
+                break;
+
+            case 4:
+                Prim(n);
+                break;
+
+            case 5:
+                cout << "\nEnter Starting Village Number (1 to "
+                     << n << "): ";
+                cin >> start;
+
+                if (start >= 1 && start <= n)
+                    BFS(start - 1, n);
+                else
+                    cout << "Invalid Village Number!\n";
+                break;
+
+            case 6:
+                cout << "\nThank You! System Closed Successfully.\n";
+                break;
+
+            default:
+                cout << "\nInvalid Choice! Try Again.\n";
+        }
+
+    } while (choice != 6);
+
+    return 0;
+}
